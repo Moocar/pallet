@@ -161,14 +161,26 @@
     (script/with-script-context [:centos]
       (is (script-no-comment=
            "/usr/sbin/useradd -r user1"
-           (script (~create-user "user1"  ~{:system true})))))))
+           (script (~create-user "user1"  ~{:system true}))))))
+  (testing "system on smartos"
+    (script/with-script-context [:smartos]
+      (is (= (str "/usr/sbin/useradd testing && \n" expect-password-test "\n")
+	     (script (~create-user "testing" ~{:password "pass"})))))
+    (script/with-script-context [:smartos]
+     (is (= "/usr/sbin/useradd testing\n"
+	     (script (~create-user "testing" ~{:system true} )))))))
 
 (deftest modify-user-test
   (is (script-no-comment=
        "/usr/sbin/usermod --home \"/home2/user1\" --shell \"/bin/bash\" user1"
        (script
         (~modify-user
-         "user1"  ~{:home "/home2/user1" :shell "/bin/bash"})))))
+         "user1"  ~{:home "/home2/user1" :shell "/bin/bash"}))))
+  (script/with-script-context [:smartos]
+    (is (= "/usr/sbin/usermod -s \"/bin/bash\" user1\n"
+	   (script
+	    (~modify-user
+	     "user1" ~{:shell "/bin/bash"}))))))
 
 
 ;;; package management
@@ -262,7 +274,9 @@
   (mktest :debian etc-default "/etc/default")
   (mktest :centos etc-default "/etc/sysconfig")
   (mktest :fedora etc-default "/etc/sysconfig")
-  (mktest :os-x etc-default "/etc/defaults"))
+  (mktest :os-x etc-default "/etc/defaults")
+  (mktest :solaris etc-default "/etc/defaults")
+  (mktest :smartos etc-default "/etc/defaults"))
 
 (deftest config-root-test
   (mktest :ubuntu config-root "/etc"))

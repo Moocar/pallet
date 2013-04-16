@@ -54,6 +54,8 @@
   ("rm" ~(stevedore/map-to-arg-string options) ~file))
 (script/defimpl rm [#{:darwin :os-x}] [file & {:keys [recursive force]}]
   ("rm" ~(stevedore/map-to-arg-string {:r recursive :f force}) ~file))
+(script/defimpl rm [#{:smartos :solaris}] [file & {:keys [recursive force]}]
+  ("rm" ~(stevedore/map-to-arg-string {:r recursive :f force}) ~file))
 
 (script/defscript mv [source destination & {:keys [force backup]}])
 (script/defimpl mv :default
@@ -194,6 +196,8 @@
   ("md5sum" ~(stevedore/map-to-arg-string options) ~file))
 (script/defimpl md5sum [#{:darwin :os-x}] [file & {:as options}]
   ("/sbin/md5" -r ~file))
+(script/defimpl md5sum [#{:smartos :solaris}] [file & {:as options}]
+  ("/usr/bin/digest" -a md5 -v ~file))
 
 (script/defscript normalise-md5
   "Normalise an md5 sum file to contain the base filename"
@@ -760,7 +764,7 @@
   "/etc/default")
 (script/defimpl etc-default [#{:centos :rhel :amzn-linux :fedora}] []
   "/etc/sysconfig")
-(script/defimpl etc-default [#{:os-x :darwin}] []
+(script/defimpl etc-default [#{:os-x :darwin :smartos :solaris}] []
   "/etc/defaults")
 
 (script/defscript log-root [])
@@ -874,6 +878,13 @@
   [#{:centos-5.3 :os-x :darwin :debian :fedora}]
   [& {:keys [no-prompt user stdin]}]
   ("/usr/bin/sudo"
+   ~@(when user ["-u" user])
+   ~@(when stdin ["-S"])))
+
+(script/defimpl sudo 
+  [#{:smartos :solaris}] 
+  [& {:keys [no-prompt user stdin]}]
+  ("/opt/local/bin/sudo"
    ~@(when user ["-u" user])
    ~@(when stdin ["-S"])))
 

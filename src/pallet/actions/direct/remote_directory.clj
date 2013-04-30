@@ -88,6 +88,15 @@
                                  ~(str "--strip-components=" strip-components)
                                  -f @rdf)
                                 ("cd" -))
+                          :mac-tar (stevedore/checked-script
+                                (format "Untar %s" tarpath)
+                                (var rdf @("stat" -q ~tarpath))
+                                ("cd" ~path)
+                                ("tar"
+                                 ~tar-options
+                                 ~(str "--strip-components=" strip-components)
+                                 -f @rdf)
+                                ("cd" -))
                           :gtar (stevedore/checked-script
                                 (format "Untar %s" tarpath)
                                 (var rdf @("readlink" -f ~tarpath))

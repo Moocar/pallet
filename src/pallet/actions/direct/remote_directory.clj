@@ -90,7 +90,7 @@
                                 ("cd" -))
                           :mac-tar (stevedore/checked-script
                                 (format "Untar %s" tarpath)
-                                (var rdf @("stat" -q ~tarpath))
+                                (var rdf ~tarpath)
                                 ("cd" ~path)
                                 ("tar"
                                  ~tar-options
